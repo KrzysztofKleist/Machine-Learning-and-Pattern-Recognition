@@ -21,5 +21,11 @@ def pca(D, L):
 
     DP = np.dot(P.T, D)
 
-    plt.scatter(DP[0][:], DP[1][:])
+    DP0 = DP[:, L == 0]
+    DP1 = DP[:, L == 1]
+
+    plt.title('PCA')
+    plt.scatter(DP0[0][:], DP0[1][:], c='blue', label='Bad wine')
+    plt.scatter(DP1[0][:], DP1[1][:], c='orange', label='Good wine')
+    plt.legend()
     plt.show()

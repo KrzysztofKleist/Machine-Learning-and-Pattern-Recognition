@@ -26,16 +26,20 @@ if __name__ == '__main__':
     P = U[:, ::-1][:, 0:2]
 
     print(P)
-    print(np.load("IRIS_PCA_matrix_m4.npy"))
-    print(P.round(9) == np.load("IRIS_PCA_matrix_m4.npy").round(9))
+    # print(np.load("IRIS_PCA_matrix_m4.npy"))
+    # print(P.round(9) == np.load("IRIS_PCA_matrix_m4.npy").round(9))
 
     DP = np.dot(P.T, D)
+
+    DP0 = DP[:, L == 0]
+    DP1 = DP[:, L == 1]
+    DP2 = DP[:, L == 2]
 
     plt.rc('font', size=16)
     plt.rc('xtick', labelsize=16)
     plt.rc('ytick', labelsize=16)
 
-    plt.scatter(DP[0][0:49], DP[1][0:49], c='blue')
-    plt.scatter(DP[0][50:99], DP[1][50:99], c='orange')
-    plt.scatter(DP[0][100:], DP[1][100:], c='green')
+    plt.scatter(DP0[0], DP0[1], c='blue')
+    plt.scatter(DP1[0], DP1[1], c='orange')
+    plt.scatter(DP2[0], DP2[1], c='green')
     plt.show()

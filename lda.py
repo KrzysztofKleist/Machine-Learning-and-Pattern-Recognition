@@ -30,5 +30,11 @@ def lda(D, L):
 
     WP = np.dot(W.T, D)
 
-    plt.scatter(WP[0][:], WP[1][:])
+    WP0 = WP[:, L == 0]
+    WP1 = WP[:, L == 1]
+
+    plt.title('LDA')
+    plt.scatter(WP0[0][:], WP0[1][:], c='blue', label='Bad wine')
+    plt.scatter(WP1[0][:], WP1[1][:], c='orange', label='Good wine')
+    plt.legend()
     plt.show()

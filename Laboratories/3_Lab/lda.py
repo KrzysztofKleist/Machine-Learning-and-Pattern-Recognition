@@ -44,11 +44,17 @@ if __name__ == '__main__':
 
     WP = np.dot(W.T, D)
 
+    WP0 = WP[:, L == 0]
+    WP1 = WP[:, L == 1]
+    WP2 = WP[:, L == 2]
+
+    print(WP0.shape)
+
     plt.rc('font', size=16)
     plt.rc('xtick', labelsize=16)
     plt.rc('ytick', labelsize=16)
 
-    plt.scatter(WP[0][0:49], WP[1][0:49], c='blue')
-    plt.scatter(WP[0][50:99], WP[1][50:99], c='orange')
-    plt.scatter(WP[0][100:], WP[1][100:], c='green')
+    plt.scatter(WP0[0], WP0[1], c='blue')
+    plt.scatter(WP1[0], WP1[1], c='orange')
+    plt.scatter(WP2[0], WP2[1], c='green')
     plt.show()
