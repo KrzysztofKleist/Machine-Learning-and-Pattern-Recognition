@@ -8,6 +8,14 @@ def mrow(v):
     return v.reshape((1, v.size))
 
 
+def vcol(v):
+    return v.reshape((v.size, 1))
+
+
+def vrow(v):
+    return v.reshape((1, v.size))
+
+
 def compute_empirical_cov(X):
     mu = compute_empirical_mean(X)
     cov = np.dot((X - mu), (X - mu).T) / X.shape

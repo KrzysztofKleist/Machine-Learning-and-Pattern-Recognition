@@ -9,7 +9,7 @@ from loads import *
 from plots import *
 
 
-def lda(D, L):
+def lda(D, L, m):
     mu = mcol(D.mean(1))  # gives the same result as loop and division but faster
 
     mu0 = mcol(D[:, L == 0].mean(1))
@@ -25,16 +25,17 @@ def lda(D, L):
     SW = np.dot(Sw, Sw.T) / float(Sw.shape[1])
 
     s, U = scipy.linalg.eigh(SB, SW)
-    m = 2
     W = U[:, ::-1][:, 0:m]
 
     WP = np.dot(W.T, D)
 
-    WP0 = WP[:, L == 0]
-    WP1 = WP[:, L == 1]
+    # WP0 = WP[:, L == 0]
+    # WP1 = WP[:, L == 1]
+    #
+    # plt.title('LDA')
+    # plt.scatter(WP0[0][:], WP0[1][:], c='blue', label='Bad wine')
+    # plt.scatter(WP1[0][:], WP1[1][:], c='orange', label='Good wine')
+    # plt.legend()
+    # plt.show()
 
-    plt.title('LDA')
-    plt.scatter(WP0[0][:], WP0[1][:], c='blue', label='Bad wine')
-    plt.scatter(WP1[0][:], WP1[1][:], c='orange', label='Good wine')
-    plt.legend()
-    plt.show()
+    return WP
