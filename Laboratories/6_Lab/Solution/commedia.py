@@ -1,17 +1,17 @@
-import numpy
-import string
-import scipy.special
 import itertools
-import sys
+
+import numpy
+import scipy.special
+
 
 def mcol(v):
     return v.reshape((v.size, 1))
 
-def load_data():
 
+def load_data():
     lInf = []
 
-    f=open('data/inferno.txt', encoding="ISO-8859-1")
+    f = open('../data/inferno.txt', encoding="ISO-8859-1")
 
     for line in f:
         lInf.append(line.strip())
@@ -19,7 +19,7 @@ def load_data():
 
     lPur = []
 
-    f=open('data/purgatorio.txt', encoding="ISO-8859-1")
+    f = open('../data/purgatorio.txt', encoding="ISO-8859-1")
 
     for line in f:
         lPur.append(line.strip())
@@ -27,29 +27,29 @@ def load_data():
 
     lPar = []
 
-    f=open('data/paradiso.txt', encoding="ISO-8859-1")
+    f = open('../data/paradiso.txt', encoding="ISO-8859-1")
 
     for line in f:
         lPar.append(line.strip())
     f.close()
-    
+
     return lInf, lPur, lPar
 
-def split_data(l, n):
 
+def split_data(l, n):
     lTrain, lTest = [], []
     for i in range(len(l)):
         if i % n == 0:
             lTest.append(l[i])
         else:
             lTrain.append(l[i])
-            
+
     return lTrain, lTest
+
 
 ### Solution 1 - Dictionaries of frequencies ###
 
 def S1_buildDictionary(lTercets):
-
     '''
     Create a set of all words contained in the list of tercets lTercets
     lTercets is a list of tercets (list of strings)
@@ -62,8 +62,8 @@ def S1_buildDictionary(lTercets):
             sDict.add(w)
     return sDict
 
-def S1_estimateModel(hlTercets, eps = 0.1):
 
+def S1_estimateModel(hlTercets, eps=0.1):
     '''
     Build frequency dictionaries for each class.
 
@@ -76,49 +76,51 @@ def S1_estimateModel(hlTercets, eps = 0.1):
     # Build the set of all words appearing at least once in each class
     sDictCommon = set([])
 
-    for cls in hlTercets: # Loop over class labels
+    for cls in hlTercets:  # Loop over class labels
         lTercets = hlTercets[cls]
         sDictCls = S1_buildDictionary(lTercets)
         sDictCommon = sDictCommon.union(sDictCls)
 
     # Initialize the counts of words for each class with eps
     h_clsLogProb = {}
-    for cls in hlTercets: # Loop over class labels
-        h_clsLogProb[cls] = {w: eps for w in sDictCommon} # Create a dictionary for each class that contains all words as keys and the pseudo-count as initial values
+    for cls in hlTercets:  # Loop over class labels
+        h_clsLogProb[cls] = {w: eps for w in
+                             sDictCommon}  # Create a dictionary for each class that contains all words as keys and the pseudo-count as initial values
 
     # Estimate counts
-    for cls in hlTercets: # Loop over class labels
+    for cls in hlTercets:  # Loop over class labels
         lTercets = hlTercets[cls]
-        for tercet in lTercets: # Loop over all tercets of the class
+        for tercet in lTercets:  # Loop over all tercets of the class
             words = tercet.split()
-            for w in words: # Loop over words of the given tercet
+            for w in words:  # Loop over words of the given tercet
                 h_clsLogProb[cls][w] += 1
-            
+
     # Compute frequencies
-    for cls in hlTercets: # Loop over class labels
-        nWordsCls = sum(h_clsLogProb[cls].values()) # Get all occurrencies of words in cls and sum them. this is the number of words (including pseudo-counts)
-        for w in h_clsLogProb[cls]: # Loop over all words
-            h_clsLogProb[cls][w] = numpy.log(h_clsLogProb[cls][w]) - numpy.log(nWordsCls) # Compute log N_{cls,w} / N
+    for cls in hlTercets:  # Loop over class labels
+        nWordsCls = sum(h_clsLogProb[
+                            cls].values())  # Get all occurrencies of words in cls and sum them. this is the number of words (including pseudo-counts)
+        for w in h_clsLogProb[cls]:  # Loop over all words
+            h_clsLogProb[cls][w] = numpy.log(h_clsLogProb[cls][w]) - numpy.log(nWordsCls)  # Compute log N_{cls,w} / N
 
     return h_clsLogProb
 
-def S1_compute_logLikelihoods(h_clsLogProb, text):
 
+def S1_compute_logLikelihoods(h_clsLogProb, text):
     '''
     Compute the array of log-likelihoods for each class for the given text
     h_clsLogProb is the dictionary of model parameters as returned by S1_estimateModel
     The function returns a dictionary of class-conditional log-likelihoods
     '''
-    
+
     logLikelihoodCls = {cls: 0 for cls in h_clsLogProb}
-    for cls in h_clsLogProb: # Loop over classes
-        for word in text.split(): # Loop over words
+    for cls in h_clsLogProb:  # Loop over classes
+        for word in text.split():  # Loop over words
             if word in h_clsLogProb[cls]:
                 logLikelihoodCls[cls] += h_clsLogProb[cls][word]
     return logLikelihoodCls
 
-def S1_compute_logLikelihoodMatrix(h_clsLogProb, lTercets, hCls2Idx = None):
 
+def S1_compute_logLikelihoodMatrix(h_clsLogProb, lTercets, hCls2Idx=None):
     '''
     Compute the matrix of class-conditional log-likelihoods for each class each tercet in lTercets
 
@@ -128,23 +130,23 @@ def S1_compute_logLikelihoodMatrix(h_clsLogProb, lTercets, hCls2Idx = None):
    
     Returns a #cls x #tercets matrix. Each row corresponds to a class.
     '''
-    
+
     if hCls2Idx is None:
-        hCls2Idx = {cls:idx for idx, cls in enumerate(sorted(h_clsLogProb))}
+        hCls2Idx = {cls: idx for idx, cls in enumerate(sorted(h_clsLogProb))}
 
     S = numpy.zeros((len(h_clsLogProb), len(lTercets)))
     for tIdx, tercet in enumerate(lTercets):
         hScores = S1_compute_logLikelihoods(h_clsLogProb, tercet)
-        for cls in h_clsLogProb: # We sort the class labels so that rows are ordered according to alphabetical order of labels
+        for cls in h_clsLogProb:  # We sort the class labels so that rows are ordered according to alphabetical order of labels
             clsIdx = hCls2Idx[cls]
             S[clsIdx, tIdx] = hScores[cls]
 
     return S
 
+
 ### Solution 2 - Arrays of occurrencies ###
 
 def S2_buildDictionary(lTercets):
-
     '''
     Create a dictionary of all words contained in the list of tercets lTercets
     The dictionary allows storing the words, and mapping each word to an index i (the corresponding index in the array of occurrencies)
@@ -162,8 +164,8 @@ def S2_buildDictionary(lTercets):
                 nWords += 1
     return hDict
 
-def S2_estimateModel(hlTercets, eps = 0.1):
 
+def S2_estimateModel(hlTercets, eps=0.1):
     '''
     Build word log-probability vectors for all classes
 
@@ -174,45 +176,47 @@ def S2_estimateModel(hlTercets, eps = 0.1):
     '''
 
     # Since the dictionary also includes mappings from word to indices it's more practical to build a single dict directly from the complete set of tercets, rather than doing it incrementally as we did in Solution S1
-    lTercetsAll = list(itertools.chain(*hlTercets.values())) 
+    lTercetsAll = list(itertools.chain(*hlTercets.values()))
     hWordDict = S2_buildDictionary(lTercetsAll)
-    nWords = len(hWordDict) # Total number of words
+    nWords = len(hWordDict)  # Total number of words
 
     h_clsLogProb = {}
     for cls in hlTercets:
-        h_clsLogProb[cls] = numpy.zeros(nWords) + eps # In this case we use 1-dimensional vectors for the model parameters. We will reshape them later.
-    
+        h_clsLogProb[cls] = numpy.zeros(
+            nWords) + eps  # In this case we use 1-dimensional vectors for the model parameters. We will reshape them later.
+
     # Estimate counts
-    for cls in hlTercets: # Loop over class labels
+    for cls in hlTercets:  # Loop over class labels
         lTercets = hlTercets[cls]
-        for tercet in lTercets: # Loop over all tercets of the class
+        for tercet in lTercets:  # Loop over all tercets of the class
             words = tercet.split()
-            for w in words: # Loop over words of the given tercet
+            for w in words:  # Loop over words of the given tercet
                 wordIdx = hWordDict[w]
-                h_clsLogProb[cls][wordIdx] += 1 # h_clsLogProb[cls] ius a 1-D array, h_clsLogProb[cls][wordIdx] is the element in position wordIdx
+                h_clsLogProb[cls][
+                    wordIdx] += 1  # h_clsLogProb[cls] ius a 1-D array, h_clsLogProb[cls][wordIdx] is the element in position wordIdx
 
     # Compute frequencies
-    for cls in h_clsLogProb.keys(): # Loop over class labels
+    for cls in h_clsLogProb.keys():  # Loop over class labels
         vOccurrencies = h_clsLogProb[cls]
         vFrequencies = vOccurrencies / vOccurrencies.sum()
         vLogProbabilities = numpy.log(vFrequencies)
         h_clsLogProb[cls] = vLogProbabilities
 
     return h_clsLogProb, hWordDict
-    
+
+
 def S2_tercet2occurrencies(tercet, hWordDict):
-    
     '''
     Convert a tercet in a (column) vector of word occurrencies. Word indices are given by hWordDict
     '''
     v = numpy.zeros(len(hWordDict))
     for w in tercet.split():
-        if w in hWordDict: # We discard words that are not in the dictionary
+        if w in hWordDict:  # We discard words that are not in the dictionary
             v[hWordDict[w]] += 1
     return mcol(v)
 
-def S2_compute_logLikelihoodMatrix(h_clsLogProb, hWordDict, lTercets, hCls2Idx = None):
 
+def S2_compute_logLikelihoodMatrix(h_clsLogProb, hWordDict, lTercets, hCls2Idx=None):
     '''
     Compute the matrix of class-conditional log-likelihoods for each class each tercet in lTercets
 
@@ -224,21 +228,23 @@ def S2_compute_logLikelihoodMatrix(h_clsLogProb, hWordDict, lTercets, hCls2Idx =
     '''
 
     if hCls2Idx is None:
-        hCls2Idx = {cls:idx for idx, cls in enumerate(sorted(h_clsLogProb))}
-    
+        hCls2Idx = {cls: idx for idx, cls in enumerate(sorted(h_clsLogProb))}
+
     numClasses = len(h_clsLogProb)
     numWords = len(hWordDict)
 
     # We build the matrix of model parameters. Each row contains the model parameters for a class (the row index is given from hCls2Idx)
-    MParameters = numpy.zeros((numClasses, numWords)) 
+    MParameters = numpy.zeros((numClasses, numWords))
     for cls in h_clsLogProb:
         clsIdx = hCls2Idx[cls]
-        MParameters[clsIdx, :] = h_clsLogProb[cls] # MParameters[clsIdx, :] is a 1-dimensional view that corresponds to the row clsIdx, we can assign to the row directly the values of another 1-dimensional array
+        MParameters[clsIdx, :] = h_clsLogProb[
+            cls]  # MParameters[clsIdx, :] is a 1-dimensional view that corresponds to the row clsIdx, we can assign to the row directly the values of another 1-dimensional array
 
     SList = []
     for tercet in lTercets:
         v = S2_tercet2occurrencies(tercet, hWordDict)
-        STercet = numpy.dot(MParameters, v) # The log-lieklihoods for the tercets can be computed as a matrix-vector product. Each row of the resulting column vector corresponds to M_c v = sum_j v_j log p_c,j
+        STercet = numpy.dot(MParameters,
+                            v)  # The log-lieklihoods for the tercets can be computed as a matrix-vector product. Each row of the resulting column vector corresponds to M_c v = sum_j v_j log p_c,j
         SList.append(numpy.dot(MParameters, v))
 
     S = numpy.hstack(SList)
@@ -247,8 +253,7 @@ def S2_compute_logLikelihoodMatrix(h_clsLogProb, hWordDict, lTercets, hCls2Idx =
 
 ################################################################################
 
-def compute_classPosteriors(S, logPrior = None):
-
+def compute_classPosteriors(S, logPrior=None):
     '''
     Compute class posterior probabilities
 
@@ -259,14 +264,14 @@ def compute_classPosteriors(S, logPrior = None):
     '''
 
     if logPrior is None:
-        logPrior = numpy.log( numpy.ones(S.shape[0]) / float(S.shape[0]) )
-    J = S + mcol(logPrior) # Compute joint probability
-    ll = scipy.special.logsumexp(J, axis = 0) # Compute marginal likelihood log f(x)
-    P = J - ll # Compute posterior log-probabilities P = log ( f(x, c) / f(x)) = log f(x, c) - log f(x)
+        logPrior = numpy.log(numpy.ones(S.shape[0]) / float(S.shape[0]))
+    J = S + mcol(logPrior)  # Compute joint probability
+    ll = scipy.special.logsumexp(J, axis=0)  # Compute marginal likelihood log f(x)
+    P = J - ll  # Compute posterior log-probabilities P = log ( f(x, c) / f(x)) = log f(x, c) - log f(x)
     return numpy.exp(P)
 
-def compute_accuracy(P, L):
 
+def compute_accuracy(P, L):
     '''
     Compute accuracy for posterior probabilities P and labels L. L is the integer associated to the correct label (in alphabetical order)
     '''
@@ -274,16 +279,15 @@ def compute_accuracy(P, L):
     PredictedLabel = numpy.argmax(P, axis=0)
     NCorrect = (PredictedLabel.ravel() == L.ravel()).sum()
     NTotal = L.size
-    return float(NCorrect)/float(NTotal)
+    return float(NCorrect) / float(NTotal)
+
 
 if __name__ == '__main__':
-
     lInf, lPur, lPar = load_data()
 
     lInfTrain, lInfEval = split_data(lInf, 4)
     lPurTrain, lPurEval = split_data(lPur, 4)
     lParTrain, lParEval = split_data(lPar, 4)
-
 
     ### Solution 1 ###
     ### Multiclass ###
@@ -294,20 +298,20 @@ if __name__ == '__main__':
         'inferno': lInfTrain,
         'purgatorio': lPurTrain,
         'paradiso': lParTrain
-        }
+    }
 
     lTercetsEval = lInfEval + lPurEval + lParEval
 
-    S1_model = S1_estimateModel(hlTercetsTrain, eps = 0.001)
+    S1_model = S1_estimateModel(hlTercetsTrain, eps=0.001)
 
     S1_predictions = compute_classPosteriors(
         S1_compute_logLikelihoodMatrix(
             S1_model,
             lTercetsEval,
             hCls2Idx,
-            ),
-        numpy.log(numpy.array([1./3., 1./3., 1./3.]))
-        )
+        ),
+        numpy.log(numpy.array([1. / 3., 1. / 3., 1. / 3.]))
+    )
 
     labelsInf = numpy.zeros(len(lInfEval))
     labelsInf[:] = hCls2Idx['inferno']
@@ -321,21 +325,24 @@ if __name__ == '__main__':
     labelsEval = numpy.hstack([labelsInf, labelsPur, labelsPar])
 
     # Per-class accuracy
-    print('Multiclass - S1 - Inferno - Accuracy:', compute_accuracy(S1_predictions[:, labelsEval==hCls2Idx['inferno']], labelsEval[labelsEval==hCls2Idx['inferno']]))
-    print('Multiclass - S1 - Purgatorio - Accuracy:', compute_accuracy(S1_predictions[:, labelsEval==hCls2Idx['purgatorio']], labelsEval[labelsEval==hCls2Idx['purgatorio']]))
-    print('Multiclass - S1 - Paradiso - Accuracy:', compute_accuracy(S1_predictions[:, labelsEval==hCls2Idx['paradiso']], labelsEval[labelsEval==hCls2Idx['paradiso']]))
+    print('Multiclass - S1 - Inferno - Accuracy:',
+          compute_accuracy(S1_predictions[:, labelsEval == hCls2Idx['inferno']],
+                           labelsEval[labelsEval == hCls2Idx['inferno']]))
+    print('Multiclass - S1 - Purgatorio - Accuracy:',
+          compute_accuracy(S1_predictions[:, labelsEval == hCls2Idx['purgatorio']],
+                           labelsEval[labelsEval == hCls2Idx['purgatorio']]))
+    print('Multiclass - S1 - Paradiso - Accuracy:',
+          compute_accuracy(S1_predictions[:, labelsEval == hCls2Idx['paradiso']],
+                           labelsEval[labelsEval == hCls2Idx['paradiso']]))
 
     # Overall accuracy
     print('Multiclass - S1 - Accuracy:', compute_accuracy(S1_predictions, labelsEval))
-
-
-
 
     ### Binary from multiclass scores [Optional, for the standard binary case see below] ###
     ### Only inferno vs paradiso, the other pairs are similar ###
 
     lTercetsEval = lInfEval + lParEval
-    S = S1_compute_logLikelihoodMatrix(S1_model, lTercetsEval, hCls2Idx = hCls2Idx)
+    S = S1_compute_logLikelihoodMatrix(S1_model, lTercetsEval, hCls2Idx=hCls2Idx)
 
     SBinary = numpy.vstack([S[0:1, :], S[2:3, :]])
     P = compute_classPosteriors(SBinary)
@@ -353,20 +360,20 @@ if __name__ == '__main__':
     hlTercetsTrain = {
         'inferno': lInfTrain,
         'paradiso': lParTrain
-        }
+    }
 
     lTercetsEval = lInfEval + lParEval
 
-    S1_model = S1_estimateModel(hlTercetsTrain, eps = 0.001)
+    S1_model = S1_estimateModel(hlTercetsTrain, eps=0.001)
 
     S1_predictions = compute_classPosteriors(
         S1_compute_logLikelihoodMatrix(
             S1_model,
             lTercetsEval,
             hCls2Idx,
-            ),
-        numpy.log(numpy.array([1./2., 1./2.]))
-        )
+        ),
+        numpy.log(numpy.array([1. / 2., 1. / 2.]))
+    )
 
     labelsInf = numpy.zeros(len(lInfEval))
     labelsInf[:] = hCls2Idx['inferno']
@@ -378,8 +385,6 @@ if __name__ == '__main__':
 
     print('Binary [inferno vs paradiso] - S1 - Accuracy:', compute_accuracy(S1_predictions, labelsEval))
 
-
-
     ### Solution 2 ###
     ### Multiclass ###
 
@@ -389,11 +394,11 @@ if __name__ == '__main__':
         'inferno': lInfTrain,
         'purgatorio': lPurTrain,
         'paradiso': lParTrain
-        }
+    }
 
     lTercetsEval = lInfEval + lPurEval + lParEval
 
-    S2_model, S2_wordDict = S2_estimateModel(hlTercetsTrain, eps = 0.001)
+    S2_model, S2_wordDict = S2_estimateModel(hlTercetsTrain, eps=0.001)
 
     S2_predictions = compute_classPosteriors(
         S2_compute_logLikelihoodMatrix(
@@ -401,9 +406,9 @@ if __name__ == '__main__':
             S2_wordDict,
             lTercetsEval,
             hCls2Idx,
-            ),
-        numpy.log(numpy.array([1./3., 1./3., 1./3.]))
-        )
+        ),
+        numpy.log(numpy.array([1. / 3., 1. / 3., 1. / 3.]))
+    )
 
     labelsInf = numpy.zeros(len(lInfEval))
     labelsInf[:] = hCls2Idx['inferno']
@@ -422,7 +427,7 @@ if __name__ == '__main__':
     ### Only inferno vs paradiso, the other pairs are similar ###
 
     lTercetsEval = lInfEval + lParEval
-    S = S2_compute_logLikelihoodMatrix(S2_model, S2_wordDict, lTercetsEval, hCls2Idx = hCls2Idx)
+    S = S2_compute_logLikelihoodMatrix(S2_model, S2_wordDict, lTercetsEval, hCls2Idx=hCls2Idx)
 
     SBinary = numpy.vstack([S[0:1, :], S[2:3, :]])
     P = compute_classPosteriors(SBinary)
@@ -439,11 +444,11 @@ if __name__ == '__main__':
     hlTercetsTrain = {
         'inferno': lInfTrain,
         'paradiso': lParTrain
-        }
+    }
 
     lTercetsEval = lInfEval + lParEval
 
-    S2_model, S2_wordDict = S2_estimateModel(hlTercetsTrain, eps = 0.001)
+    S2_model, S2_wordDict = S2_estimateModel(hlTercetsTrain, eps=0.001)
 
     S2_predictions = compute_classPosteriors(
         S2_compute_logLikelihoodMatrix(
@@ -451,9 +456,9 @@ if __name__ == '__main__':
             S2_wordDict,
             lTercetsEval,
             hCls2Idx,
-            ),
-        numpy.log(numpy.array([1./2., 1./2.]))
-        )
+        ),
+        numpy.log(numpy.array([1. / 2., 1. / 2.]))
+    )
 
     labelsInf = numpy.zeros(len(lInfEval))
     labelsInf[:] = hCls2Idx['inferno']
@@ -464,13 +469,3 @@ if __name__ == '__main__':
     labelsEval = numpy.hstack([labelsInf, labelsPar])
 
     print('Binary [inferno vs paradiso] - S2 - Accuracy:', compute_accuracy(S2_predictions, labelsEval))
-
-
-
-    
-                         
-    
-            
-
-    
-    
