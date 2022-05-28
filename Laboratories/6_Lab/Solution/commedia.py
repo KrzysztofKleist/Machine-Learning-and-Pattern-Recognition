@@ -277,6 +277,7 @@ def compute_accuracy(P, L):
     '''
 
     PredictedLabel = numpy.argmax(P, axis=0)
+    numpy.save("commedia_predictedLabels.npy", PredictedLabel)
     NCorrect = (PredictedLabel.ravel() == L.ravel()).sum()
     NTotal = L.size
     return float(NCorrect) / float(NTotal)
@@ -338,6 +339,7 @@ if __name__ == '__main__':
     # Overall accuracy
     print('Multiclass - S1 - Accuracy:', compute_accuracy(S1_predictions, labelsEval))
 
+    """
     ### Binary from multiclass scores [Optional, for the standard binary case see below] ###
     ### Only inferno vs paradiso, the other pairs are similar ###
 
@@ -469,3 +471,4 @@ if __name__ == '__main__':
     labelsEval = numpy.hstack([labelsInf, labelsPar])
 
     print('Binary [inferno vs paradiso] - S2 - Accuracy:', compute_accuracy(S2_predictions, labelsEval))
+    """
