@@ -1,5 +1,6 @@
 import numpy as np
 
+
 def mcol(v):
     return v.reshape((v.size, 1))
 
@@ -32,10 +33,5 @@ def compute_sb(X, L):
     for i in set(list(L)):
         D = X[:, L == i]
         mu = compute_empirical_mean(D)
-        # print(i)
-        # print((mu - muG) * D.shape[1])
-        # print(mu)
-        # print(muG)
-        # print()
         SB += D.shape[1] * np.dot((mu - muG), (mu - muG).T)
     return SB / X.shape[1]

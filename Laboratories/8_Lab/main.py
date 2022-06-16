@@ -1,5 +1,7 @@
 import numpy.linalg.linalg
 import pylab
+import scipy.special
+import sys
 
 from lab4_functions import *
 from loads import *
@@ -195,23 +197,27 @@ if __name__ == '__main__':
     """
     ##################################################################
     # Confusion Matrix for Commedia Dataset by Cumani
-    """
+
     llCond = np.load('Data/commedia_ll.npy')
     llJoint = llCond + np.log(1.0 / 3.0)
     Labels = np.load('Data/commedia_labels.npy')
     llMarginal = scipy.special.logsumexp(llJoint, axis=0)
     Post = np.exp(llJoint - llMarginal)
     Pred = np.argmax(Post, axis=0)
-    Conf = np.zeros((3, 3))
-    for i in range(3):
-        for j in range(3):
-            Conf[i, j] = ((Pred == i) * (Labels == j)).sum()
-
-    print(Conf)
+    print("Post shape: ", Post.shape)
+    print("Pred shape: ", Pred.shape)
+    print("Labels shape: ", Labels.shape)
+    # Conf = np.zeros((3, 3))
+    # for i in range(3):
+    #     for j in range(3):
+    #         Conf[i, j] = ((Pred == i) * (Labels == j)).sum()
+    #
+    # print(Conf)
     sys.exit(0)
-    """
+
     ##################################################################
     # Binary task: optimal decisions
+    """
     llrs = np.load('Data/commedia_llr_infpar.npy')
     Labels = np.load('Data/commedia_labels_infpar.npy')
 
@@ -243,3 +249,4 @@ if __name__ == '__main__':
     pylab.plot(p, bayes_error_plot(p, scores, Labels, minCost=False), color='r')
     pylab.plot(p, bayes_error_plot(p, scores, Labels, minCost=True), color='b')
     pylab.show()
+    """

@@ -61,7 +61,7 @@ XPlot = numpy.linspace(-8, 12, 1000)
 m = numpy.ones((1, 1)) * 1.0
 C = numpy.ones((1, 1)) * 2.0
 plt.plot(XPlot.ravel(), numpy.exp(logpdf_GAU_ND(vrow(XPlot), m, C)))
-# plt.show()
+plt.show()
 
 pdfSol = numpy.load('solutions/llGAU.npy')
 pdfGau = logpdf_GAU_ND(vrow(XPlot), m, C)
