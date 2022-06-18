@@ -1,32 +1,16 @@
-import numpy
-import matplotlib
-import matplotlib.pyplot as plt
+from functions.load_functions import *
+from functions.pca_functions import *
+from functions.plot_functions import *
 
-from loads import *
-from plots import *
+if __name__ == '__main__':
+    D, L = load('files/Train.txt')  # loads the data
+    DP = pca(D, L, 2)
+    plot_pca(DP, L)
+    plt.savefig('plots/pca.jpg')
+    plt.show()
 
-
-def pca(D, L, m):
-    mu = mcol(D.mean(1))
-
-    DC = D - mcol(mu)
-
-    C = np.dot(DC, DC.T)  # covariance matrix
-    C = C / float(D.shape[1])
-
-    s, U = np.linalg.eigh(C)
-
-    P = U[:, ::-1][:, 0:m]
-
-    DP = np.dot(P.T, D)
-
-    # DP0 = DP[:, L == 0]
-    # DP1 = DP[:, L == 1]
-    #
-    # plt.title('PCA')
-    # plt.scatter(DP0[0][:], DP0[1][:], c='blue', label='Bad wine')
-    # plt.scatter(DP1[0][:], DP1[1][:], c='orange', label='Good wine')
-    # plt.legend()
-    # plt.show()
-
-    return DP
+    DG = gaussianization(D)
+    DGP = pca(DG, L, 2)
+    plot_pca(DGP, L)
+    plt.savefig('plots/pca_gaussianized.jpg')
+    plt.show()

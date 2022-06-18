@@ -101,6 +101,7 @@ if __name__ == '__main__':
     # DTR and LTR are training data and labels, DTE and LTE are evaluation data and labels
     (DTrain, LTrain), (DTest, LTest) = split_db_2to1(D, L)
     """
+
     ##################################################################
     # Confusion Matrix for Multivariate Gaussian Classifier
     """
@@ -138,6 +139,7 @@ if __name__ == '__main__':
 
     print(confMatrix)
     """
+
     ##################################################################
     # Confusion Matrix for Tied Multivariate Gaussian Classifier
     """
@@ -187,6 +189,7 @@ if __name__ == '__main__':
 
     print(confMatrix)
     """
+
     ##################################################################
     # Confusion Matrix for Commedia Dataset
     """
@@ -206,6 +209,7 @@ if __name__ == '__main__':
 
     print(confMatrix)
     """
+
     ##################################################################
     # Confusion Matrix for Commedia Dataset by Cumani
     """
@@ -222,6 +226,7 @@ if __name__ == '__main__':
 
     print(Conf)
     """
+
     ##################################################################
     # Binary task: optimal decisions
     """
@@ -256,7 +261,7 @@ if __name__ == '__main__':
 
     ##################################################################
     # Binary task: evaluation
-    """
+
     llrs = np.load('Data/commedia_llr_infpar.npy')
     Labels = np.load('Data/commedia_labels_infpar.npy')
 
@@ -336,7 +341,7 @@ if __name__ == '__main__':
 
     ##################################################################
     # ROC curves and Bayes error plots
-
+    """
     llrs = np.load('Data/commedia_llr_infpar.npy')
     Labels = np.load('Data/commedia_labels_infpar.npy')
 
@@ -375,4 +380,4 @@ if __name__ == '__main__':
     pylab.plot(p, bayes_error_plot(p, scores, Labels, minCost=True), color='b')
     pylab.plot(p, bayes_error_plot(p, scores1, Labels, minCost=False), color='y')
     pylab.plot(p, bayes_error_plot(p, scores1, Labels, minCost=True), color='c')
-    pylab.show()
+    # pylab.show()
