@@ -12,16 +12,17 @@ if __name__ == '__main__':
     D, L = load('files/Train.txt')  # loads the data
 
     # comment next two lines to get raw features
-    # Dg = gaussianization(D)  # gaussianizes the data, same shape as for preprocessed data
-    # D = Dg
+    Dg = gaussianization(D)  # gaussianizes the data, same shape as for preprocessed data
+    D = Dg
 
     kRange = [5]
     # pcaMRange = [8]
-    pcaMRange = [8, 9]
+    pcaMRange = [9]
+    # pcaMRange = [8, 9]
 
     print("#####################################################################################")
     print("Multivariate Gaussian Classifier")
-
+    """
     classifierType = "Multivariate Gaussian Classifier "
     for k in kRange:
         print("k: {}".format(k), "\r", end="")
@@ -38,12 +39,6 @@ if __name__ == '__main__':
         print("minDCF: ", compute_min_DCF(ScoresConcat, L, 0.5, 1, 1).round(3))
         print("error rate: ", compute_error_rate(CM).round(4) * 100, " %")
 
-        bayes_error_plot(np.linspace(-2, 2, 21), ScoresConcat, L)
-        plt.show()
-        plot_ROC(ScoresConcat, L)
-        plt.show()
-        sys.exit(0)
-
         CM = compute_conf_matrix_binary(assign_labels(ScoresConcat, 0.1, 1, 1), L)
         print(CM)
         print("minDCF: ", compute_min_DCF(ScoresConcat, L, 0.1, 1, 1).round(3))
@@ -53,10 +48,10 @@ if __name__ == '__main__':
         print(CM)
         print("minDCF: ", compute_min_DCF(ScoresConcat, L, 0.9, 1, 1).round(3))
         print("error rate: ", compute_error_rate(CM).round(4) * 100, " %")
-
+    """
     print("#####################################################################################")
     print("Tied Multivariate Gaussian Classifier")
-
+    """
     classifierType = "Tied Multivariate Gaussian Classifier "
     for k in kRange:
         print("k: {}".format(k), "\r", end="")
@@ -82,10 +77,10 @@ if __name__ == '__main__':
         print(CM)
         print("minDCF: ", compute_min_DCF(ScoresConcat, L, 0.9, 1, 1).round(3))
         print("error rate: ", compute_error_rate(CM).round(4) * 100, " %")
-
+    """
     print("#####################################################################################")
     print("Multivariate Gaussian Classifier + PCA")
-
+    """
     classifierType = "Multivariate Gaussian Classifier + PCA "
     for m in pcaMRange:
         print(" #################")
@@ -115,7 +110,7 @@ if __name__ == '__main__':
             print(CM)
             print("minDCF: ", compute_min_DCF(ScoresConcat, L, 0.9, 1, 1).round(3))
             print("error rate: ", compute_error_rate(CM).round(4) * 100, " %")
-
+    """
     print("#####################################################################################")
     print("Tied Multivariate Gaussian Classifier + PCA")
 
@@ -138,6 +133,14 @@ if __name__ == '__main__':
             print(CM)
             print("minDCF: ", compute_min_DCF(ScoresConcat, L, 0.5, 1, 1).round(3))
             print("error rate: ", compute_error_rate(CM).round(4) * 100, " %")
+
+            bayes_error_plot(np.linspace(-2, 2, 21), ScoresConcat, L)
+            plt.savefig('plots/bayes_error_plot_tied_full_cov_gaussianized_data_pca_m_9_pi_0_5.jpg')
+            plt.show()
+            plot_ROC(ScoresConcat, L)
+            plt.savefig('plots/roc_plot_tied_full_cov_gaussianized_data_pca_m_9_pi_0_5.jpg')
+            plt.show()
+            sys.exit(0)
 
             CM = compute_conf_matrix_binary(assign_labels(ScoresConcat, 0.1, 1, 1), L)
             print(CM)

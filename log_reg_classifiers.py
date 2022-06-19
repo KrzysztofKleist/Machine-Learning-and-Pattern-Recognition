@@ -17,21 +17,23 @@ if __name__ == '__main__':
 
     kRange = [5]
     # pcaMRange = [8]
-    pcaMRange = [8, 9]
-
-    print("#####################################################################################")
-    print("Logistic Regression")
+    pcaMRange = [9]
+    # pcaMRange = [8, 9]
 
     # lRange for minDCF plots
-    lRange = [1e-6, 1e-5, 1e-4, 1e-3, 0.01, 0.1, 1.0, 10, 100, 1e3, 1e4, 1e5, 1e6]
-    # lRange = [1e-4]
+    # lRange = [1e-6, 1e-5, 1e-4, 1e-3, 0.01, 0.1, 1.0, 10, 100, 1e3, 1e4, 1e5, 1e6]
+    lRange = [1e-4]
 
-    prior_T = 0.5  # change between 0.5, 0.1, 0.9
+    prior_T = 0.1  # change between 0.5, 0.1, 0.9
+
     lArr = np.array(lRange)
     minDCF_0_5 = np.empty([0])
     minDCF_0_1 = np.empty([0])
     minDCF_0_9 = np.empty([0])
 
+    print("#####################################################################################")
+    print("Logistic Regression")
+    """
     classifierType = "Logistic Regression "
     for l in lRange:
         print("     ########")
@@ -63,22 +65,22 @@ if __name__ == '__main__':
         print(minDCF_0_1.round(3))
         print(minDCF_0_9.round(3))
 
-    # minDCF plots
-    plt.figure()
-    plt.xscale('log')
-    plt.plot(lArr, minDCF_0_5, label='minDCF-0.5', color='r')
-    plt.plot(lArr, minDCF_0_1, label='minDCF-0.1', color='b')
-    plt.plot(lArr, minDCF_0_9, label='minDCF-0.9', color='g')
-
-    plt.xlabel('λ')
-    plt.ylabel("DCF")
-    plt.tight_layout()
-    plt.legend()
-    plt.savefig('plots/minDCF_logReg_raw_data.jpg')
-    # plt.savefig('plots/minDCF_logReg_gaussianized_data.jpg')
-    plt.show()
-    sys.exit(0)
-
+    # # minDCF plots
+    # plt.figure()
+    # plt.xscale('log')
+    # plt.plot(lArr, minDCF_0_5, label='minDCF-0.5', color='r')
+    # plt.plot(lArr, minDCF_0_1, label='minDCF-0.1', color='b')
+    # plt.plot(lArr, minDCF_0_9, label='minDCF-0.9', color='g')
+    #
+    # plt.xlabel('λ')
+    # plt.ylabel("DCF")
+    # plt.tight_layout()
+    # plt.legend()
+    # plt.savefig('plots/minDCF_logReg_raw_data.jpg')
+    # # plt.savefig('plots/minDCF_logReg_gaussianized_data.jpg')
+    # plt.show()
+    # sys.exit(0)
+    """
     print("#####################################################################################")
     print("Logistic Regression + PCA")
 
@@ -116,6 +118,15 @@ if __name__ == '__main__':
                 minDCF_0_9 = np.concatenate((minDCF_0_9, np.array([compute_min_DCF(ScoresConcat, L, 0.9, 1, 1)])),
                                             axis=0)
 
-            print(minDCF_0_5[0].round(3))
-            print(minDCF_0_1[0].round(3))
-            print(minDCF_0_9[0].round(3))
+            print(minDCF_0_5.round(3))
+            print(minDCF_0_1.round(3))
+            print(minDCF_0_9.round(3))
+
+            bayes_error_plot(np.linspace(-2, 2, 21), ScoresConcat, L)
+            plt.savefig('plots/bayes_error_plot_log_reg_raw_data_pca_m_9_pi_0_5.jpg')
+            plt.show()
+            plot_ROC(ScoresConcat, L)
+            plt.savefig('plots/roc_plot_log_reg_raw_data_pca_m_9_pi_0_5.jpg')
+            plt.show()
+            sys.exit(0)
+
