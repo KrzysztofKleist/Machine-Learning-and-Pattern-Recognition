@@ -1,3 +1,7 @@
+import sys
+
+import matplotlib.pyplot as plt
+
 from functions.cost_computations_functions import *
 from functions.gaussian_classifiers_functions import *
 from functions.kfolds_functions import *
@@ -33,6 +37,12 @@ if __name__ == '__main__':
         print(CM)
         print("minDCF: ", compute_min_DCF(ScoresConcat, L, 0.5, 1, 1).round(3))
         print("error rate: ", compute_error_rate(CM).round(4) * 100, " %")
+
+        bayes_error_plot(np.linspace(-2, 2, 21), ScoresConcat, L)
+        plt.show()
+        plot_ROC(ScoresConcat, L)
+        plt.show()
+        sys.exit(0)
 
         CM = compute_conf_matrix_binary(assign_labels(ScoresConcat, 0.1, 1, 1), L)
         print(CM)

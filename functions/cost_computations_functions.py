@@ -1,4 +1,5 @@
 import numpy as np
+from matplotlib import pyplot as plt
 
 
 def compute_conf_matrix_binary(Pred, Labels):
@@ -33,18 +34,6 @@ def compute_min_DCF(scores, labels, pi, Cfn, Cfp):
     return np.array(dcfList).min()
 
 
-def bayes_error_plot(pArray, scores, labels, minCost=False):
-    y = []
-    for p in pArray:
-        pi = 1.0 / (1.0 + np.exp(-p))
-        # print(pi)
-        if minCost:
-            y.append(compute_min_DCF(scores, labels, pi, 1, 1))
-        else:
-            y.append(compute_act_DCF(scores, labels, pi, 1, 1))
-    return np.array(y)
-
-
 def compute_emp_Bayes_binary(CM, pi, Cfn, Cfp):
     fnr = CM[0, 1] / (CM[0, 1] + CM[1, 1])
     fpr = CM[1, 0] / (CM[0, 0] + CM[1, 0])
@@ -58,3 +47,46 @@ def compute_normalized_emp_Bayes(CM, pi, Cfn, Cfp):
 
 def compute_error_rate(CM):
     return (CM[0][1] + CM[1][0]) / CM.sum()
+
+
+def bayes_error_plot_values(pArray, scores, labels, minCost=False):
+    y = []
+    for p in pArray:
+        pi = 1.0 / (1.0 + np.exp(-p))
+        # print(pi)
+        if minCost:
+            y.append(compute_min_DCF(scores, labels, pi, 1, 1))
+        else:
+            y.append(compute_act_DCF(scores, labels, pi, 1, 1))
+    return np.array(y)
+
+
+def bayes_error_plot(pArray, scores, labels):
+    plt.figure()
+    plt.xlabel("prior log-odds")
+    plt.ylabel("DCF value")
+    plt.plot(pArray, bayes_error_plot_values(pArray, scores, labels, minCost=False), color='r', label="actDCF")
+    plt.plot(pArray, bayes_error_plot_values(pArray, scores, labels, minCost=True), color='b', label="minDCF")
+    plt.legend()
+
+
+def plot_ROC(scores, labels):
+    thresholds = np.array(scores)
+    thresholds.sort()
+    thresholds = np.concatenate([np.array([-np.inf]), thresholds, np.array([np.inf])])
+    FPR = np.zeros(thresholds.size)
+    TPR = np.zeros(thresholds.size)
+    for idx, t in enumerate(thresholds):
+        Pred = np.int32(scores > t)
+        Conf = np.zeros((2, 2))
+        for i in range(2):
+            for j in range(2):
+                Conf[i, j] = ((Pred == i) * (labels == j)).sum()
+        TPR[idx] = Conf[1, 1] / (Conf[1, 1] + Conf[0, 1])
+        FPR[idx] = Conf[1, 0] / (Conf[1, 0] + Conf[0, 0])
+
+    plt.figure()
+    plt.grid()
+    plt.xlabel("FPR")
+    plt.ylabel("TPR")
+    plt.plot(FPR, TPR)
