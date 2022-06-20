@@ -5,8 +5,8 @@ import scipy
 from functions.cost_computations_functions import *
 from functions.kfolds_functions import *
 from functions.load_functions import *
-from functions.pca_functions import *
 from functions.logreg_functions import *
+from functions.pca_functions import *
 
 if __name__ == '__main__':
     D, L = load('files/Train.txt')  # loads the data
@@ -24,7 +24,7 @@ if __name__ == '__main__':
     # lRange = [1e-6, 1e-5, 1e-4, 1e-3, 0.01, 0.1, 1.0, 10, 100, 1e3, 1e4, 1e5, 1e6]
     lRange = [1e-4]
 
-    prior_T = 0.1  # change between 0.5, 0.1, 0.9
+    prior_T = 0.5  # change between 0.5, 0.1, 0.9
 
     lArr = np.array(lRange)
     minDCF_0_5 = np.empty([0])
@@ -128,5 +128,5 @@ if __name__ == '__main__':
             plot_ROC(ScoresConcat, L)
             plt.savefig('plots/roc_plot_log_reg_raw_data_pca_m_9_pi_0_5.jpg')
             plt.show()
-            sys.exit(0)
 
+            sys.exit(0)

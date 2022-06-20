@@ -22,7 +22,7 @@ if __name__ == '__main__':
 
     print("#####################################################################################")
     print("Multivariate Gaussian Classifier")
-    """
+
     classifierType = "Multivariate Gaussian Classifier "
     for k in kRange:
         print("k: {}".format(k), "\r", end="")
@@ -48,7 +48,7 @@ if __name__ == '__main__':
         print(CM)
         print("minDCF: ", compute_min_DCF(ScoresConcat, L, 0.9, 1, 1).round(3))
         print("error rate: ", compute_error_rate(CM).round(4) * 100, " %")
-    """
+
     print("#####################################################################################")
     print("Tied Multivariate Gaussian Classifier")
     """

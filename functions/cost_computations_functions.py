@@ -45,6 +45,25 @@ def compute_normalized_emp_Bayes(CM, pi, Cfn, Cfp):
     return empBayes / min(pi * Cfn, (1 - pi) * Cfp)
 
 
+def compute_min_norm_DCF(scores, LTE, prior_tilde, Cfn, Cfp):
+    Bayes_emp_risk_dummy = min(prior_tilde * Cfn, (1 - prior_tilde) * Cfp)
+    thresholds = np.array(scores)
+    Bayes_emp = np.zeros(thresholds.size)
+    for idx, t in enumerate(thresholds):
+        Pred = np.int32(scores > t)
+        Conf = np.zeros((2, 2))
+        for j in range(2):
+            for i in range(2):
+                Conf[j, i] = ((Pred == j) * (LTE == i)).sum()
+        FNR_minDCF = Conf[0, 1] / (Conf[0, 1] + Conf[1, 1])
+        FPR_minDCF = Conf[1, 0] / (Conf[1, 0] + Conf[0, 0])
+        Bayes_emp[idx] = prior_tilde * Cfn * FNR_minDCF + (1 - prior_tilde) * Cfp * FPR_minDCF
+
+    Bayes_emp_min = Bayes_emp.min()
+    min_normDCF = Bayes_emp_min / Bayes_emp_risk_dummy
+    return min_normDCF
+
+
 def compute_error_rate(CM):
     return (CM[0][1] + CM[1][0]) / CM.sum()
 
