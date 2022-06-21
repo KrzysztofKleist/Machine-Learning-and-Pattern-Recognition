@@ -1,9 +1,8 @@
-import sys
-
-from functions.cost_computations_functions import *
-from functions.kfolds_functions import *
 from functions.load_functions import *
 from functions.svm_functions import *
+from functions.plot_functions import *
+from functions.cost_computations_functions import *
+from functions.kfolds_functions import *
 
 if __name__ == '__main__':
     D, L = load('files/Train.txt')  # loads the data
@@ -27,7 +26,7 @@ if __name__ == '__main__':
 
     print("#####################################################################################")
     print("SVM Linear Kernel")
-    """
+
     classifierType = "SVM Linear Kernel "
     for C in CRange:
         print("     ########")
@@ -81,7 +80,7 @@ if __name__ == '__main__':
     # plt.savefig('plots/minDCF_SVM_linear_gaussianized_data.jpg')
     # plt.show()
     # sys.exit(0)
-    """
+
     print("#####################################################################################")
     print("SVM Polynomial Kernel")
     """
@@ -190,7 +189,7 @@ if __name__ == '__main__':
     """
     print("#####################################################################################")
     print("SVM RBF Kernel - different gammas")
-
+    """
     minDCF_0_5_0001 = np.empty([0])
     minDCF_0_5_001 = np.empty([0])
     minDCF_0_5_01 = np.empty([0])
@@ -255,3 +254,4 @@ if __name__ == '__main__':
     plt.savefig('plots/minDCF_SVM_RBF_gaussianized_data_var_gamma.jpg')
     plt.show()
     sys.exit(0)
+    """

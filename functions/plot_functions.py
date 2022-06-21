@@ -65,3 +65,5 @@ def heat_maps(Dg, L):
     plt.imshow(DhBad, cmap='Blues', aspect='equal')
     # plt.savefig('plots/heat_map_2_bad_wines.jpg')
     # plt.show()
+
+    # plt.imshow(pearson_matrix, cmap='gist_yarg', vmin=-1, vmax=1)

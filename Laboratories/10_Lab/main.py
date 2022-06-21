@@ -104,3 +104,6 @@ def GMM_EM(X, gmm):
 if __name__ == '__main__':
     gmm = load_gmm('Data/GMM_1D_3G_EM.json')
     print(gmm)
+
+    gmm = load_gmm('Data/GMM_1D_3G_init.json')
+    print(gmm)
