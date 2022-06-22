@@ -11,6 +11,9 @@ if __name__ == '__main__':
     # Dg = gaussianization(D)  # gaussianizes the data, same shape as for preprocessed data
     # D = Dg
 
+    m = 8
+    D = pca(D, L, m)
+
     kRange = [5]
     # pcaMRange = [8]
     pcaMRange = [8, 9]
@@ -73,9 +76,10 @@ if __name__ == '__main__':
         print("minDCF: ", compute_min_DCF(ScoresConcat, L, 0.9, 1, 1).round(3))
         print("error rate: ", compute_error_rate(CM).round(4) * 100, " %")
 
-    print("#####################################################################################")
-    print("Naive Bayes Gaussian Classifier + PCA")
-
+    ###### THIS CODE IS USELESS ######
+    # print("#####################################################################################")
+    # print("Naive Bayes Gaussian Classifier + PCA")
+    """
     classifierType = "Naive Bayes Gaussian Classifier + PCA "
     for m in pcaMRange:
         print(" #################")
@@ -105,10 +109,10 @@ if __name__ == '__main__':
             print(CM)
             print("minDCF: ", compute_min_DCF(ScoresConcat, L, 0.9, 1, 1).round(3))
             print("error rate: ", compute_error_rate(CM).round(4) * 100, " %")
-
-    print("#####################################################################################")
-    print("Tied Naive Bayes Gaussian Classifier + PCA")
-
+    """
+    # print("#####################################################################################")
+    # print("Tied Naive Bayes Gaussian Classifier + PCA")
+    """
     classifierType = "Tied Naive Bayes Gaussian Classifier + PCA "
     for m in pcaMRange:
         print(" #################")
@@ -138,3 +142,4 @@ if __name__ == '__main__':
             print(CM)
             print("minDCF: ", compute_min_DCF(ScoresConcat, L, 0.9, 1, 1).round(3))
             print("error rate: ", compute_error_rate(CM).round(4) * 100, " %")
+    """

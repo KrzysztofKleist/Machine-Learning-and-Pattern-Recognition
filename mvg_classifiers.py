@@ -1,7 +1,3 @@
-import sys
-
-import matplotlib.pyplot as plt
-
 from functions.cost_computations_functions import *
 from functions.gaussian_classifiers_functions import *
 from functions.kfolds_functions import *
@@ -14,6 +10,9 @@ if __name__ == '__main__':
     # comment next two lines to get raw features
     Dg = gaussianization(D)  # gaussianizes the data, same shape as for preprocessed data
     D = Dg
+
+    m = 8
+    D = pca(D, L, m)
 
     kRange = [5]
     # pcaMRange = [8]
@@ -49,8 +48,8 @@ if __name__ == '__main__':
         print("minDCF: ", compute_min_DCF(ScoresConcat, L, 0.9, 1, 1).round(3))
         print("error rate: ", compute_error_rate(CM).round(4) * 100, " %")
 
-    print("#####################################################################################")
-    print("Tied Multivariate Gaussian Classifier")
+    # print("#####################################################################################")
+    # print("Tied Multivariate Gaussian Classifier")
     """
     classifierType = "Tied Multivariate Gaussian Classifier "
     for k in kRange:
@@ -78,8 +77,10 @@ if __name__ == '__main__':
         print("minDCF: ", compute_min_DCF(ScoresConcat, L, 0.9, 1, 1).round(3))
         print("error rate: ", compute_error_rate(CM).round(4) * 100, " %")
     """
-    print("#####################################################################################")
-    print("Multivariate Gaussian Classifier + PCA")
+
+    ###### THIS CODE IS USELESS ######
+    # print("#####################################################################################")
+    # print("Multivariate Gaussian Classifier + PCA")
     """
     classifierType = "Multivariate Gaussian Classifier + PCA "
     for m in pcaMRange:
@@ -111,9 +112,9 @@ if __name__ == '__main__':
             print("minDCF: ", compute_min_DCF(ScoresConcat, L, 0.9, 1, 1).round(3))
             print("error rate: ", compute_error_rate(CM).round(4) * 100, " %")
     """
-    print("#####################################################################################")
-    print("Tied Multivariate Gaussian Classifier + PCA")
-
+    # print("#####################################################################################")
+    # print("Tied Multivariate Gaussian Classifier + PCA")
+    """
     classifierType = "Tied Multivariate Gaussian Classifier + PCA "
     for m in pcaMRange:
         print(" #################")
@@ -151,3 +152,4 @@ if __name__ == '__main__':
             print(CM)
             print("minDCF: ", compute_min_DCF(ScoresConcat, L, 0.9, 1, 1).round(3))
             print("error rate: ", compute_error_rate(CM).round(4) * 100, " %")
+    """

@@ -1,5 +1,3 @@
-import sys
-
 import scipy
 
 from functions.cost_computations_functions import *
@@ -14,6 +12,9 @@ if __name__ == '__main__':
     # comment next two lines to get raw features
     # Dg = gaussianization(D)  # gaussianizes the data, same shape as for preprocessed data
     # D = Dg
+
+    m = 8
+    D = pca(D, L, m)
 
     kRange = [5]
     # pcaMRange = [8]
@@ -33,7 +34,7 @@ if __name__ == '__main__':
 
     print("#####################################################################################")
     print("Logistic Regression")
-    """
+
     classifierType = "Logistic Regression "
     for l in lRange:
         print("     ########")
@@ -80,10 +81,11 @@ if __name__ == '__main__':
     # # plt.savefig('plots/minDCF_logReg_gaussianized_data.jpg')
     # plt.show()
     # sys.exit(0)
-    """
-    print("#####################################################################################")
-    print("Logistic Regression + PCA")
 
+    ###### THIS CODE IS USELESS ######
+    # print("#####################################################################################")
+    # print("Logistic Regression + PCA")
+    """
     classifierType = "Logistic Regression + PCA "
     for m in pcaMRange:
         print(" #################")
@@ -130,3 +132,4 @@ if __name__ == '__main__':
             plt.show()
 
             sys.exit(0)
+    """

@@ -91,7 +91,7 @@ def GMM_EM(X, gmm):
     return gmm
 
 
-def conf_matrix(llratio, labs, pr, C_fn, C_fp):
+def conf_matrix(llratio, labels, pr, C_fn, C_fp):
     # Computing c* comparing the llr with a threshold t
     t = - np.log((pr * C_fn) / ((1 - pr) * C_fp))
 
@@ -104,10 +104,7 @@ def conf_matrix(llratio, labs, pr, C_fn, C_fp):
             C_star[i] = 0
 
     # Computing the confusion matrix, comparing labels and c*
-    conf_matr = np.zeros([2, 2], dtype=int)
-    for j in range(2):
-        for i in range(2):
-            conf_matr[j, i] = ((C_star == j) * (labs == i)).sum()
+    conf_matr = compute_conf_matrix_binary(C_star, labels)
     return conf_matr
 
 
@@ -121,190 +118,200 @@ def weighted_logS(D, gmm_):
 if __name__ == '__main__':
     D, L = load('files/Train.txt')
 
-    m = 9
+    # comment next two lines to get raw features
+    Dg = gaussianization(D)  # gaussianizes the data, same shape as for preprocessed data
+    D = Dg
+
+    # m = 9
     # D = pca(D, L, m)
 
     kRange = [5]
-    # pcaMRange = [8]
-    pcaMRange = [9]
-    # pcaMRange = [8, 9]
 
     prior_T = 0.5  # change between 0.5, 0.1, 0.9
 
     print("#####################################################################################")
     print("GMM")
 
-    components = 8
-    iterations = 0
+    # componentsRange = [1, 2, 4, 8, 16, 32]
+    componentsRange = [2]
 
-    real_labels = []
-    log_scores = np.zeros([1, 2])
+    for components in componentsRange:
+        print("##########")
+        print("components: ", components)
 
-    classifierType = "GMM "
-    for k in kRange:
-        print("k: {}".format(k), "\r", end="")
-        for iter in range(k):
-            DTrain, DTest, LTrain, LTest = kFolds(D, L, k, iter)
+        iterations = 0
+        real_labels = []
+        log_scores = np.zeros([1, 2])
 
-            mean_0 = mean(0, DTrain, LTrain)
-            mean_1 = mean(1, DTrain, LTrain)
-            covariance_matrix_0 = covariance(0, DTrain, LTrain)
-            covariance_matrix_1 = covariance(1, DTrain, LTrain)
-            DTrain_0 = DTrain[:, LTrain == 0]
-            DTrain_1 = DTrain[:, LTrain == 1]
-            # compute the tied covariance
-            N_0 = DTrain_0.shape[1]
-            N_1 = DTrain_1.shape[1]
-            tied_covariance = (1 / DTrain.shape[1]) * (covariance_matrix_0 * N_0 + covariance_matrix_1 * N_1)
+        classifierType = "GMM Tied Diag "
+        for k in kRange:
+            print("k: {}".format(k), "\r", end="")
+            for iter in range(k):
+                DTrain, DTest, LTrain, LTest = kFolds(D, L, k, iter)
 
-            gmm_array0 = []
-            gmm_array1 = []
-            gmm0 = []
-            gmm1 = []
+                mean_0 = mean(0, DTrain, LTrain)
+                mean_1 = mean(1, DTrain, LTrain)
+                covariance_matrix_0 = covariance(0, DTrain, LTrain)
+                covariance_matrix_1 = covariance(1, DTrain, LTrain)
+                DTrain_0 = DTrain[:, LTrain == 0]
+                DTrain_1 = DTrain[:, LTrain == 1]
+                # compute the tied covariance
+                N_0 = DTrain_0.shape[1]
+                N_1 = DTrain_1.shape[1]
+                tied_covariance = (1 / DTrain.shape[1]) * (covariance_matrix_0 * N_0 + covariance_matrix_1 * N_1)
 
-            while iterations < np.log2(components):
-                iterations = iterations + 1
-                weight = 0
-                comp = 2 ** iterations
-                if iterations == 1:
-                    weight = 1.0 / comp
+                gmm_array0 = []
+                gmm_array1 = []
+                gmm0 = []
+                gmm1 = []
 
-                    mean_vec0 = np.zeros((mean_0.shape[0], comp))
+                while iterations < np.log2(components):
+                    iterations = iterations + 1
+                    weight = 0
+                    comp = 2 ** iterations
+                    if iterations == 1:
+                        weight = 1.0 / comp
 
-                    U0, s0, _ = np.linalg.svd(covariance_matrix_0)
-                    alpha0 = 1
-                    d0 = U0[:, 0:1] * s0[0] ** 0.5 * alpha0
+                        mean_vec0 = np.zeros((mean_0.shape[0], comp))
 
-                    U1, s1, _ = np.linalg.svd(covariance_matrix_1)
-                    alpha1 = 1
-                    d1 = U1[:, 0:1] * s1[0] ** 0.5 * alpha1
-
-                    mean_vec0[:, 0] = (mcol(mean_0[:, 0]) + d0).ravel()
-                    mean_vec0[:, 1] = (mcol(mean_0[:, 0]) - d0).ravel()
-                    mean_vec1 = np.zeros((mean_1.shape[0], comp))
-                    mean_vec1[:, 0] = (mcol(mean_1[:, 0]) + d1).ravel()
-                    mean_vec1[:, 1] = (mcol(mean_1[:, 0]) - d1).ravel()
-
-                    tied_cov_new = tied_covariance
-                    U, s, _ = np.linalg.svd(tied_cov_new)
-                    psi = 0.01
-                    s[s < psi] = psi
-                    tied_cov_new = np.dot(U, mcol(s) * U.T)
-
-                    for c in range(comp):
-                        gmm_array0.append((weight, mcol(mean_vec0[:, c]), tied_cov_new))
-
-                    for c in range(comp):
-                        gmm_array1.append((weight, mcol(mean_vec1[:, c]), tied_cov_new))
-
-                    gmm0 = GMM_EM(DTrain_0, gmm_array0)
-                    gmm1 = GMM_EM(DTrain_1, gmm_array1)
-                else:
-                    gmm_array0 = []
-                    gmm_array1 = []
-                    weight0_array = np.zeros((comp))
-                    weight1_array = np.zeros((comp))
-                    d0_array = np.zeros((mean_0.shape[0], (int(comp / 2))))
-                    d1_array = np.zeros((mean_1.shape[0], (int(comp / 2))))
-                    cov_array0 = []
-                    cov_array1 = []
-
-                    for c in range(int(comp / 2)):
-                        U0, s0, _ = np.linalg.svd(gmm0[c][2])
-                        cov_array0.append(gmm0[c][2])
-                        cov_array0.append(gmm0[c][2])
+                        U0, s0, _ = np.linalg.svd(covariance_matrix_0)
                         alpha0 = 1
-                        d0_array[:, c] = (U0[:, 0:1] * s0[0] ** 0.5 * alpha0).ravel()
+                        d0 = U0[:, 0:1] * s0[0] ** 0.5 * alpha0
 
-                    for c in range(int(comp / 2)):
-                        U1, s1, _ = np.linalg.svd(gmm1[c][2])
-                        cov_array1.append(gmm1[c][2])
-                        cov_array1.append(gmm1[c][2])
+                        U1, s1, _ = np.linalg.svd(covariance_matrix_1)
                         alpha1 = 1
-                        d1_array[:, c] = (U1[:, 0:1] * s1[0] ** 0.5 * alpha1).ravel()
+                        d1 = U1[:, 0:1] * s1[0] ** 0.5 * alpha1
 
-                    for c in range(int(comp / 2)):
-                        weight0_array[2 * c] = gmm0[c][0] / 2
-                        weight0_array[(2 * c) + 1] = gmm0[c][0] / 2
+                        mean_vec0[:, 0] = (mcol(mean_0[:, 0]) + d0).ravel()
+                        mean_vec0[:, 1] = (mcol(mean_0[:, 0]) - d0).ravel()
+                        mean_vec1 = np.zeros((mean_1.shape[0], comp))
+                        mean_vec1[:, 0] = (mcol(mean_1[:, 0]) + d1).ravel()
+                        mean_vec1[:, 1] = (mcol(mean_1[:, 0]) - d1).ravel()
 
-                    for c in range(int(comp / 2)):
-                        weight1_array[2 * c] = gmm1[c][0] / 2
-                        weight1_array[(2 * c) + 1] = gmm1[c][0] / 2
+                        tied_cov_new = tied_covariance
+                        U, s, _ = np.linalg.svd(tied_cov_new)
+                        psi = 0.01
+                        s[s < psi] = psi
+                        tied_cov_new = np.dot(U, mcol(s) * U.T)
 
-                    mean_vec0 = np.zeros((mean_0.shape[0], comp))
+                        for c in range(comp):
+                            gmm_array0.append((weight, mcol(mean_vec0[:, c]), tied_cov_new))
 
-                    for c in range(int(comp / 2)):
-                        mean_vec0[:, 2 * c] = (mcol(gmm0[c][1]) + mcol(d0_array[:, c])).ravel()
-                        mean_vec0[:, ((2 * c) + 1)] = (mcol(gmm0[c][1]) - mcol(d0_array[:, c])).ravel()
+                        for c in range(comp):
+                            gmm_array1.append((weight, mcol(mean_vec1[:, c]), tied_cov_new))
 
-                    mean_vec1 = np.zeros((mean_1.shape[0], comp))
+                        gmm0 = GMM_EM(DTrain_0, gmm_array0)
+                        gmm1 = GMM_EM(DTrain_1, gmm_array1)
+                    else:
+                        gmm_array0 = []
+                        gmm_array1 = []
+                        weight0_array = np.zeros((comp))
+                        weight1_array = np.zeros((comp))
+                        d0_array = np.zeros((mean_0.shape[0], (int(comp / 2))))
+                        d1_array = np.zeros((mean_1.shape[0], (int(comp / 2))))
+                        cov_array0 = []
+                        cov_array1 = []
 
-                    for c in range(int(comp / 2)):
-                        mean_vec1[:, 2 * c] = (mcol(gmm1[c][1]) + mcol(d1_array[:, c])).ravel()
-                        mean_vec1[:, ((2 * c) + 1)] = (mcol(gmm1[c][1]) - mcol(d1_array[:, c])).ravel()
+                        for c in range(int(comp / 2)):
+                            U0, s0, _ = np.linalg.svd(gmm0[c][2])
+                            cov_array0.append(gmm0[c][2])
+                            cov_array0.append(gmm0[c][2])
+                            alpha0 = 1
+                            d0_array[:, c] = (U0[:, 0:1] * s0[0] ** 0.5 * alpha0).ravel()
 
-                    for c in range(comp):
-                        gmm_array0.append((weight0_array[c], mcol(mean_vec0[:, c]), cov_array0[c]))
-                    for c in range(comp):
-                        gmm_array1.append((weight1_array[c], mcol(mean_vec1[:, c]), cov_array1[c]))
+                        for c in range(int(comp / 2)):
+                            U1, s1, _ = np.linalg.svd(gmm1[c][2])
+                            cov_array1.append(gmm1[c][2])
+                            cov_array1.append(gmm1[c][2])
+                            alpha1 = 1
+                            d1_array[:, c] = (U1[:, 0:1] * s1[0] ** 0.5 * alpha1).ravel()
 
-                    gmm0 = GMM_EM(DTrain_0, gmm_array0)
-                    gmm1 = GMM_EM(DTrain_1, gmm_array1)
-            iterations = 0
+                        for c in range(int(comp / 2)):
+                            weight0_array[2 * c] = gmm0[c][0] / 2
+                            weight0_array[(2 * c) + 1] = gmm0[c][0] / 2
 
-            weighted_logS0 = weighted_logS(DTest, gmm0)
-            weighted_logS1 = weighted_logS(DTest, gmm1)
-            logS = np.concatenate((weighted_logS0, weighted_logS1), axis=0)
-            logS = logS.T
-            log_scores = np.concatenate((log_scores, logS))
-            real_labels = np.concatenate((real_labels, LTest), axis=0)
+                        for c in range(int(comp / 2)):
+                            weight1_array[2 * c] = gmm1[c][0] / 2
+                            weight1_array[(2 * c) + 1] = gmm1[c][0] / 2
 
-        log_scores = log_scores[1:, :]
-        Pc_0 = np.log(1 - prior_T)
-        Pc_1 = np.log(prior_T)
-        logSJoint_0 = log_scores[:, 0] + Pc_0
-        logSJoint_1 = log_scores[:, 1] + Pc_1
-        logSJoint = np.vstack((logSJoint_0, logSJoint_1)).T
+                        mean_vec0 = np.zeros((mean_0.shape[0], comp))
 
-        # The function scipy.special.logsumexp permits us to compute the log-sum-exp trick
-        logSMarginal = np.reshape(scipy.special.logsumexp(logSJoint, axis=0), (1, logSJoint.shape[1]))
-        logSPost = logSJoint - logSMarginal
+                        for c in range(int(comp / 2)):
+                            mean_vec0[:, 2 * c] = (mcol(gmm0[c][1]) + mcol(d0_array[:, c])).ravel()
+                            mean_vec0[:, ((2 * c) + 1)] = (mcol(gmm0[c][1]) - mcol(d0_array[:, c])).ravel()
 
-        # Do the exponential operation for the Posterior Probabilities since we want to do a comparison with the
-        # initial validation set
-        SPost = np.exp(logSPost)
-        # The function ArgMax returns the indices of the maximum values along the indicated axis
-        # In our case we have two columns, one for each class and we want to find the Maximum Likelihood for each
-        # sample (each row of the matrix)
-        Predicted_labels = np.argmax(SPost, axis=1)
+                        mean_vec1 = np.zeros((mean_1.shape[0], comp))
 
-        # Compute the confusion matrix, accurancy and error rates
-        CM = compute_conf_matrix_binary(Predicted_labels, real_labels)
-        print("Model error:", compute_error_rate(CM).round(3) * 100, "%")
-        print("Confusion matrix: ")
-        print(CM)
+                        for c in range(int(comp / 2)):
+                            mean_vec1[:, 2 * c] = (mcol(gmm1[c][1]) + mcol(d1_array[:, c])).ravel()
+                            mean_vec1[:, ((2 * c) + 1)] = (mcol(gmm1[c][1]) - mcol(d1_array[:, c])).ravel()
 
-        # Compute the log-likelihood ratio llr by using the score matrix
-        S = np.exp(log_scores)
-        llr = np.zeros([S.shape[0]])
-        for i in range(log_scores.shape[0]):
-            llr[i] = np.log(S[i, 1] / S[i, 0])
-        thresholds = np.array(llr)
-        scores = S[:, 1] / S[:, 0]
+                        for c in range(comp):
+                            gmm_array0.append((weight0_array[c], mcol(mean_vec0[:, c]), cov_array0[c]))
+                        for c in range(comp):
+                            gmm_array1.append((weight1_array[c], mcol(mean_vec1[:, c]), cov_array1[c]))
 
-        # Compute the normalized DCF of our model with a threshold that is our prior_T for computing the rates
-        Cfn = 1
-        Cfp = 1
-        # Compute the confusion matrix with the llr calculated previously and with real_labels from the k fold
-        confusion_matrix = conf_matrix(llr, real_labels, prior_T, Cfn, Cfp)
+                        gmm0 = GMM_EM(DTrain_0, gmm_array0)
+                        gmm1 = GMM_EM(DTrain_1, gmm_array1)
+                iterations = 0
 
-        print("Actual DCF", compute_act_DCF(scores, real_labels, 0.5, 1.0, 1.0))
-        print("Actual normalized DCF", compute_normalized_emp_Bayes(confusion_matrix, 0.5, 1.0, 1.0))
-        print("Minimum normalized DCF:", compute_min_DCF(scores, real_labels, 0.5, 1.0, 1.0))
+                weighted_logS0 = weighted_logS(DTest, gmm0)
+                weighted_logS1 = weighted_logS(DTest, gmm1)
+                logS = np.concatenate((weighted_logS0, weighted_logS1), axis=0)
+                logS = logS.T
+                log_scores = np.concatenate((log_scores, logS))
+                real_labels = np.concatenate((real_labels, LTest), axis=0)
 
-        plot_ROC(scores, real_labels)
-        plt.show()
+            log_scores = log_scores[1:, :]
+            Pc_0 = np.log(1 - prior_T)
+            Pc_1 = np.log(prior_T)
+            logSJoint_0 = log_scores[:, 0] + Pc_0
+            logSJoint_1 = log_scores[:, 1] + Pc_1
+            logSJoint = np.vstack((logSJoint_0, logSJoint_1)).T
 
-        # Bayes error plot
-        bayes_error_plot(np.linspace(-1, 1, 21), scores, real_labels)
-        plt.show()
+            # The function scipy.special.logsumexp permits us to compute the log-sum-exp trick
+            logSMarginal = np.reshape(scipy.special.logsumexp(logSJoint, axis=0), (1, logSJoint.shape[1]))
+            logSPost = logSJoint - logSMarginal
+
+            # Do the exponential operation for the Posterior Probabilities since we want to do a comparison with the
+            # initial validation set
+            SPost = np.exp(logSPost)
+            # The function ArgMax returns the indices of the maximum values along the indicated axis
+            # In our case we have two columns, one for each class and we want to find the Maximum Likelihood for each
+            # sample (each row of the matrix)
+            Predicted_labels = np.argmax(SPost, axis=1)
+
+            # Compute the confusion matrix, accurancy and error rates
+            CM = compute_conf_matrix_binary(Predicted_labels, real_labels)
+            # print("Model error:", compute_error_rate(CM).round(3) * 100, "%")
+            # print("Confusion matrix: ")
+            # print(CM)
+
+            # Compute the log-likelihood ratio llr by using the score matrix
+            S = np.exp(log_scores)
+            llr = np.zeros([S.shape[0]])
+            for i in range(log_scores.shape[0]):
+                llr[i] = np.log(S[i, 1] / S[i, 0])
+            thresholds = np.array(llr)
+            scores = S[:, 1] / S[:, 0]
+
+            # Compute the normalized DCF of our model with a threshold that is our prior_T for computing the rates
+            Cfn = 1
+            Cfp = 1
+            # Compute the confusion matrix with the llr calculated previously and with real_labels from the k fold
+            confusion_matrix = conf_matrix(llr, real_labels, prior_T, Cfn, Cfp)
+
+            # print("Actual DCF", compute_act_DCF(scores, real_labels, 0.5, 1.0, 1.0))
+            # print("Actual normalized DCF", compute_normalized_emp_Bayes(confusion_matrix, 0.5, 1.0, 1.0))
+            print("Minimum normalized DCF:", compute_min_DCF(scores, real_labels, 0.5, 1.0, 1.0).round(3))
+
+            plot_ROC(scores, real_labels)
+            # plt.savefig('plots/roc_plot_gmm_tied_diag_cov_raw_data_np_pca_components_2.jpg')
+            plt.savefig('plots/roc_plot_gmm_tied_diag_cov_gaussianized_data_np_pca_components_2.jpg')
+            plt.show()
+
+            # Bayes error plot
+            bayes_error_plot(np.linspace(-1, 1, 21), scores, real_labels)
+            # plt.savefig('plots/bayes_error_plot_gmm_tied_diag_cov_raw_data_np_pca_components_2.jpg')
+            plt.savefig('plots/bayes_error_plot_gmm_tied_diag_cov_gaussianized_data_np_pca_components_2.jpg')
+            plt.show()
