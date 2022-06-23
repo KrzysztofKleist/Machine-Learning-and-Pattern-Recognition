@@ -8,20 +8,20 @@ if __name__ == '__main__':
     D, L = load('files/Train.txt')  # loads the data
 
     # comment next two lines to get raw features
-    Dg = gaussianization(D)  # gaussianizes the data, same shape as for preprocessed data
-    D = Dg
+    # Dg = gaussianization(D)  # gaussianizes the data, same shape as for preprocessed data
+    # D = Dg
 
-    m = 8
+    m = 9
     D = pca(D, L, m)
 
     kRange = [5]
     # pcaMRange = [8]
-    pcaMRange = [9]
+    # pcaMRange = [9]
     # pcaMRange = [8, 9]
 
     print("#####################################################################################")
     print("Multivariate Gaussian Classifier")
-
+    """
     classifierType = "Multivariate Gaussian Classifier "
     for k in kRange:
         print("k: {}".format(k), "\r", end="")
@@ -47,10 +47,10 @@ if __name__ == '__main__':
         print(CM)
         print("minDCF: ", compute_min_DCF(ScoresConcat, L, 0.9, 1, 1).round(3))
         print("error rate: ", compute_error_rate(CM).round(4) * 100, " %")
-
-    # print("#####################################################################################")
-    # print("Tied Multivariate Gaussian Classifier")
     """
+    print("#####################################################################################")
+    print("Tied Multivariate Gaussian Classifier")
+
     classifierType = "Tied Multivariate Gaussian Classifier "
     for k in kRange:
         print("k: {}".format(k), "\r", end="")
@@ -64,7 +64,7 @@ if __name__ == '__main__':
 
         CM = compute_conf_matrix_binary(assign_labels(ScoresConcat, 0.5, 1, 1), L)
         print(CM)
-        print("minDCF: ", compute_min_DCF(ScoresConcat, L, 0.5, 1, 1).round(3))
+        print("minDCF: ", compute_min_DCF(ScoresConcat, L, 0.5, 1, 1))
         print("error rate: ", compute_error_rate(CM).round(4) * 100, " %")
 
         CM = compute_conf_matrix_binary(assign_labels(ScoresConcat, 0.1, 1, 1), L)
@@ -76,7 +76,6 @@ if __name__ == '__main__':
         print(CM)
         print("minDCF: ", compute_min_DCF(ScoresConcat, L, 0.9, 1, 1).round(3))
         print("error rate: ", compute_error_rate(CM).round(4) * 100, " %")
-    """
 
     ###### THIS CODE IS USELESS ######
     # print("#####################################################################################")
