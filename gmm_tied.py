@@ -6,10 +6,10 @@ if __name__ == '__main__':
     D, L = load('files/Train.txt')
 
     # comment next two lines to get raw features
-    Dg = gaussianization(D)  # gaussianizes the data, same shape as for preprocessed data
-    D = Dg
+    # Dg = gaussianization(D)  # gaussianizes the data, same shape as for preprocessed data
+    # D = Dg
 
-    m = 8
+    m = 9
     D = pca(D, L, m)
 
     kRange = [5]
@@ -20,24 +20,24 @@ if __name__ == '__main__':
     print("GMM")
 
     # componentsRange = [1, 2, 4, 8, 16, 32]
-    componentsRange = [4]
+    componentsRange = [2]
 
     for components in componentsRange:
         print("##########")
         print("components: ", components)
 
         iterations = 0
-        labels = []
         log_scores = np.zeros([1, 2])
 
         classifierType = "GMM Tied "
+        LTestConcat = np.empty([0])
         for k in kRange:
             print("k: {}".format(k), "\r", end="")
             for iter in range(k):
                 DTrain, DTest, LTrain, LTest = kFolds(D, L, k, iter)
-                log_scores, labels = compute_gmm_tied_matrix(DTrain, LTrain, DTest, LTest, labels, log_scores,
-                                                             components,
-                                                             iterations)
+                log_scores = compute_gmm_tied_matrix(DTrain, LTrain, DTest, log_scores,
+                                                     components,
+                                                     iterations)
 
             log_scores = log_scores[1:, :]
             Prior_0 = np.log(1 - prior_T)
@@ -53,25 +53,25 @@ if __name__ == '__main__':
             Predicted_labels = np.argmax(SPost, axis=1)
 
             # Compute the confusion matrix and error rates
-            CM = compute_conf_matrix_binary(Predicted_labels, labels)
+            CM = compute_conf_matrix_binary(Predicted_labels, L)
             # print("Model error:", compute_error_rate(CM).round(3) * 100, "%")
             # print("Confusion matrix: ")
             # print(CM)
 
             # Compute the score
-            llr, scores = compute_scores(log_scores)
+            llr = log_scores[:, 1] - log_scores[:, 0]
 
-            # print("Actual DCF", compute_act_DCF(scores, labels, 0.5, 1.0, 1.0))
-            # print("Actual normalized DCF", compute_normalized_emp_Bayes(confusion_matrix, 0.5, 1.0, 1.0))
-            print("Minimum normalized DCF:", compute_min_DCF(scores, labels, 0.5, 1.0, 1.0).round(3))
+            print("Actual DCF", compute_act_DCF(llr, L, 0.5, 1.0, 1.0))
+            # print("Actual normalized DCF", compute_normalized_emp_Bayes(CM, 0.5, 1.0, 1.0))
+            print("Minimum normalized DCF:", compute_min_DCF(llr, L, 0.5, 1.0, 1.0).round(3))
 
-            plot_ROC(scores, labels)
-            # plt.savefig('plots/roc_plot_gmm_tied_full_cov_raw_data_pca_m_9_components_2.jpg')
-            plt.savefig('plots/roc_plot_gmm_tied_full_cov_gaussianized_data_pca_m_8_components_4.jpg')
+            plot_ROC(llr, L)
+            plt.savefig('plots/roc_plot_gmm_tied_full_cov_raw_data_pca_m_9_components_2.jpg')
+            # plt.savefig('plots/roc_plot_gmm_tied_full_cov_gaussianized_data_pca_m_8_components_4.jpg')
             plt.show()
 
             # Bayes error plot
-            bayes_error_plot(np.linspace(-1, 1, 21), scores, labels)
-            # plt.savefig('plots/bayes_error_plot_gmm_tied_full_cov_raw_data_pca_m_9_components_2.jpg')
-            plt.savefig('plots/bayes_error_plot_gmm_tied_full_cov_gaussianized_data_pca_m_8_components_4.jpg')
+            bayes_error_plot(np.linspace(-2, 2, 21), llr, L)
+            plt.savefig('plots/bayes_error_plot_gmm_tied_full_cov_raw_data_pca_m_9_components_2.jpg')
+            # plt.savefig('plots/bayes_error_plot_gmm_tied_full_cov_gaussianized_data_pca_m_8_components_4.jpg')
             plt.show()

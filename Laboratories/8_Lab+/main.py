@@ -372,7 +372,7 @@ if __name__ == '__main__':
     pylab.figure()
     pylab.plot(p, bayes_error_plot(p, scores, Labels, minCost=False), color='r')
     pylab.plot(p, bayes_error_plot(p, scores, Labels, minCost=True), color='b')
-    # pylab.show()
+    pylab.show()
 
     scores1 = np.load('Data/commedia_llr_infpar_eps1.npy.')
     pylab.figure()
@@ -380,4 +380,4 @@ if __name__ == '__main__':
     pylab.plot(p, bayes_error_plot(p, scores, Labels, minCost=True), color='b')
     pylab.plot(p, bayes_error_plot(p, scores1, Labels, minCost=False), color='y')
     pylab.plot(p, bayes_error_plot(p, scores1, Labels, minCost=True), color='c')
-    # pylab.show()
+    pylab.show()

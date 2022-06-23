@@ -13,19 +13,19 @@ if __name__ == '__main__':
     # Dg = gaussianization(D)  # gaussianizes the data, same shape as for preprocessed data
     # D = Dg
 
-    m = 8
+    m = 9
     D = pca(D, L, m)
 
     kRange = [5]
     # pcaMRange = [8]
-    pcaMRange = [9]
+    # pcaMRange = [9]
     # pcaMRange = [8, 9]
 
     # lRange for minDCF plots
     # lRange = [1e-6, 1e-5, 1e-4, 1e-3, 0.01, 0.1, 1.0, 10, 100, 1e3, 1e4, 1e5, 1e6]
     lRange = [1e-4]
 
-    prior_T = 0.5  # change between 0.5, 0.1, 0.9
+    prior_T = 0.1  # change between 0.5, 0.1, 0.9
 
     lArr = np.array(lRange)
     minDCF_0_5 = np.empty([0])

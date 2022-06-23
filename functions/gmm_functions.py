@@ -64,13 +64,12 @@ def weighted_logS(D, gmm_):
     return log_S
 
 
-def compute_scores(log_scores):
+def compute_log_scores(log_scores):
     S = np.exp(log_scores)
     llr = np.zeros([S.shape[0]])
     for i in range(log_scores.shape[0]):
         llr[i] = np.log(S[i, 1] / S[i, 0])
-    scores = S[:, 1] / S[:, 0]
-    return llr, scores
+    return llr
 
 
 def GMM_EM(X, gmm):
@@ -104,7 +103,7 @@ def GMM_EM(X, gmm):
     return gmm
 
 
-def compute_gmm_matrix(DTrain, LTrain, DTest, LTest, labels, log_scores, components, iterations):
+def compute_gmm_matrix(DTrain, LTrain, DTest, log_scores, components, iterations):
     mean_0 = mean(0, DTrain, LTrain)
     mean_1 = mean(1, DTrain, LTrain)
     covariance_matrix_0 = covariance(0, DTrain, LTrain)
@@ -218,8 +217,7 @@ def compute_gmm_matrix(DTrain, LTrain, DTest, LTest, labels, log_scores, compone
     logS = np.concatenate((weighted_logS0, weighted_logS1), axis=0)
     logS = logS.T
     log_scores = np.concatenate((log_scores, logS))
-    labels = np.concatenate((labels, LTest), axis=0)
-    return log_scores, labels
+    return log_scores
 
 
 def GMM_EM_tied(X, gmm):
@@ -270,7 +268,7 @@ def GMM_EM_tied(X, gmm):
     return gmm
 
 
-def compute_gmm_tied_matrix(DTrain, LTrain, DTest, LTest, labels, log_scores, components, iterations):
+def compute_gmm_tied_matrix(DTrain, LTrain, DTest, log_scores, components, iterations):
     mean_0 = mean(0, DTrain, LTrain)
     mean_1 = mean(1, DTrain, LTrain)
     covariance_matrix_0 = covariance(0, DTrain, LTrain)
@@ -382,8 +380,7 @@ def compute_gmm_tied_matrix(DTrain, LTrain, DTest, LTest, labels, log_scores, co
     logS = np.concatenate((weighted_logS0, weighted_logS1), axis=0)
     logS = logS.T
     log_scores = np.concatenate((log_scores, logS))
-    labels = np.concatenate((labels, LTest), axis=0)
-    return log_scores, labels
+    return log_scores
 
 
 def GMM_EM_diag(X, gmm, covariance_matrix_0):
@@ -418,7 +415,7 @@ def GMM_EM_diag(X, gmm, covariance_matrix_0):
     return gmm
 
 
-def compute_gmm_diag_matrix(DTrain, LTrain, DTest, LTest, labels, log_scores, components, iterations):
+def compute_gmm_diag_matrix(DTrain, LTrain, DTest, log_scores, components, iterations):
     mean_0 = mean(0, DTrain, LTrain)
     mean_1 = mean(1, DTrain, LTrain)
     covariance_matrix_0 = covariance(0, DTrain, LTrain)
@@ -532,8 +529,7 @@ def compute_gmm_diag_matrix(DTrain, LTrain, DTest, LTest, labels, log_scores, co
     logS = np.concatenate((weighted_logS0, weighted_logS1), axis=0)
     logS = logS.T
     log_scores = np.concatenate((log_scores, logS))
-    labels = np.concatenate((labels, LTest), axis=0)
-    return log_scores, labels
+    return log_scores
 
 
 def GMM_EM_tied_diag(X, gmm, covariance_matrix_0):
@@ -585,7 +581,7 @@ def GMM_EM_tied_diag(X, gmm, covariance_matrix_0):
     return gmm
 
 
-def compute_gmm_tied_diag_matrix(DTrain, LTrain, DTest, LTest, labels, log_scores, components, iterations):
+def compute_gmm_tied_diag_matrix(DTrain, LTrain, DTest, log_scores, components, iterations):
     mean_0 = mean(0, DTrain, LTrain)
     mean_1 = mean(1, DTrain, LTrain)
     covariance_matrix_0 = covariance(0, DTrain, LTrain)
@@ -697,5 +693,4 @@ def compute_gmm_tied_diag_matrix(DTrain, LTrain, DTest, LTest, labels, log_score
     logS = np.concatenate((weighted_logS0, weighted_logS1), axis=0)
     logS = logS.T
     log_scores = np.concatenate((log_scores, logS))
-    labels = np.concatenate((labels, LTest), axis=0)
-    return log_scores, labels
+    return log_scores
