@@ -30,7 +30,6 @@ if __name__ == '__main__':
         log_scores = np.zeros([1, 2])
 
         classifierType = "GMM Tied "
-        LTestConcat = np.empty([0])
         for k in kRange:
             print("k: {}".format(k), "\r", end="")
             for iter in range(k):
