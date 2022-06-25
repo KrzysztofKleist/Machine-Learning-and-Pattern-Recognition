@@ -27,21 +27,21 @@ if __name__ == '__main__':
         print("components: ", components)
 
         iterations = 0
-        log_scores = np.zeros([1, 2])
+        logS = np.zeros([1, 2])
 
         classifierType = "GMM "
         for k in kRange:
             print("k: {}".format(k), "\r", end="")
             for iter in range(k):
                 DTrain, DTest, LTrain, LTest = kFolds(D, L, k, iter)
-                log_scores = compute_gmm_matrix(DTrain, LTrain, DTest, log_scores, components,
+                logS = compute_gmm_matrix(DTrain, LTrain, DTest, logS, components,
                                                 iterations)
 
-            log_scores = log_scores[1:, :]
+            logS = logS[1:, :]
             Prior_0 = np.log(1 - prior_T)
             Prior_1 = np.log(prior_T)
-            logSJoint_0 = log_scores[:, 0] + Prior_0
-            logSJoint_1 = log_scores[:, 1] + Prior_1
+            logSJoint_0 = logS[:, 0] + Prior_0
+            logSJoint_1 = logS[:, 1] + Prior_1
             logSJoint = np.vstack((logSJoint_0, logSJoint_1)).T
 
             # scipy.special.logsumexp - log-sum-exp trick
@@ -57,7 +57,7 @@ if __name__ == '__main__':
             # print(CM)
 
             # Compute the score
-            llr = log_scores[:, 1] - log_scores[:, 0]
+            llr = logS[:, 1] - logS[:, 0]
 
             print("Actual DCF", compute_act_DCF(llr, L, 0.5, 1.0, 1.0))
             # print("Actual normalized DCF", compute_normalized_emp_Bayes(CM, 0.5, 1.0, 1.0))

@@ -47,6 +47,7 @@ if __name__ == '__main__':
     w = v[0:-1]
     b = v[-1]
     scores = np.dot(w.T, DTest) + b
+    log_reg_scores = scores
 
     CM = compute_conf_matrix_binary(assign_labels(scores, 0.5, 1, 1), LTest)
     print(CM)
@@ -129,11 +130,27 @@ if __name__ == '__main__':
     print("actDCF:", compute_act_DCF(llr, LTest, 0.5, 1, 1).round(3))
     print("error rate:", compute_error_rate(CM).round(4) * 100, " %")
 
-    plot_ROC(llr, LTest)
-    plt.savefig('plots/EVALUATION_roc_plot_GMM_tied_full_cov_raw_data_pca_m_9_components_2.jpg')
-    plt.show()
-    bayes_error_plot(np.linspace(-2, 2, 21), llr, LTest)
-    plt.savefig('plots/EVALUATION_bayes_error_plot_GMM_tied_full_cov_raw_data_pca_m_9_components_2.jpg')
-    plt.show()
+    # plot_ROC(llr, LTest)
+    # plt.savefig('plots/EVALUATION_roc_plot_GMM_tied_full_cov_raw_data_pca_m_9_components_2.jpg')
+    # plt.show()
+    # bayes_error_plot(np.linspace(-2, 2, 21), llr, LTest)
+    # plt.savefig('plots/EVALUATION_bayes_error_plot_GMM_tied_full_cov_raw_data_pca_m_9_components_2.jpg')
+    # plt.show()
 
+    print("#####################################################################################")
+    print("Fusion")
 
+    fusion_scores = llr * 0.5 + scores * 0.5
+
+    CM = compute_conf_matrix_binary(assign_labels(fusion_scores, 0.5, 1, 1), LTest)
+    print(CM)
+    print("minDCF:", compute_min_DCF(fusion_scores, LTest, 0.5, 1, 1).round(3))
+    print("actDCF:", compute_act_DCF(fusion_scores, LTest, 0.5, 1, 1).round(3))
+    print("error rate:", compute_error_rate(CM).round(4) * 100, " %")
+
+    plot_ROC(fusion_scores, LTest)
+    plt.savefig('plots/EVALUATION_roc_plot_fusion.jpg')
+    plt.show()
+    bayes_error_plot(np.linspace(-2, 2, 21), fusion_scores, LTest)
+    plt.savefig('plots/EVALUATION_bayes_error_plot_fusion.jpg')
+    plt.show()
