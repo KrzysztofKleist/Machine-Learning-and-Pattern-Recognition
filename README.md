@@ -4,7 +4,7 @@ Project for Machine Learning and Pattern Recognition course regarding detection 
 
 ## About
 
-Problem was simplified to binary classification. The goal of the project was to classify the Test.txt set of wines based on Training.txt given 10 different parameters of each sample.
+Problem was simplified to binary classification. The goal of the project was to classify the *Test.txt* set of wines based on *Training.txt* given 10 different parameters of each sample.
 
 ## Acquired Skills
 
